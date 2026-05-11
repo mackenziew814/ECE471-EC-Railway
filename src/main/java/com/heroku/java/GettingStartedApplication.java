@@ -43,6 +43,7 @@ public class GettingStartedApplication {
             }
 
             model.put("records", output);
+            System.out.println("Mackenzie Wright");
             return "database";
 
         } catch (Throwable t) {
