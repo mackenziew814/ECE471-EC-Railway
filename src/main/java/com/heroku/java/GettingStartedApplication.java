@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 
 @SpringBootApplication
 @Controller
@@ -30,13 +31,15 @@ public class GettingStartedApplication {
     String database(Map<String, Object> model) {
         try (Connection connection = dataSource.getConnection()) {
             final var statement = connection.createStatement();
-            statement.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
-            statement.executeUpdate("INSERT INTO ticks VALUES (now())");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS table_timestamp_and_random_string (tick timestamp, random_string varchar(50))");
 
-            final var resultSet = statement.executeQuery("SELECT tick FROM ticks");
+            String randomString = getRandomString();
+            statement.executeUpdate("INSERT INTO table_timestamp_and_random_string VALUES (now(), '" + randomString + "')");
+
+            final var resultSet = statement.executeQuery("SELECT tick, random_string FROM table_timestamp_and_random_string");
             final var output = new ArrayList<>();
             while (resultSet.next()) {
-                output.add("Read from DB: " + resultSet.getTimestamp("tick"));
+                output.add("Read from DB: " + resultSet.getTimestamp("tick") + " - " + resultSet.getString("random_string"));
             }
 
             model.put("records", output);
@@ -46,6 +49,20 @@ public class GettingStartedApplication {
             model.put("message", t.getMessage());
             return "error";
         }
+    }
+
+    private String getRandomString() {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        int length = 10;
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            sb.append(characters.charAt(index));
+        }
+
+        return sb.toString();
     }
 
     public static void main(String[] args) {
